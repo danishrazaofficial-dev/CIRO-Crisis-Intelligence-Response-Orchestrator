@@ -1,0 +1,43 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Python caches & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+ENV/
+env/
+
+# Environment configurations (API Keys, Secrets)
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# Temporary execution data & incident logs
+logs/crisis_*.json
+traces/trace_*.json
+backend/logs/crisis_*.json
+backend/traces/trace_*.json
+backend/logs/
+backend/traces/
+
+# Expo / React Native local states
+.expo/
+dist/
+web-build/
+metro-cache/
+npm-shrinkwrap.json
+
+# IDE & OS temporary files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

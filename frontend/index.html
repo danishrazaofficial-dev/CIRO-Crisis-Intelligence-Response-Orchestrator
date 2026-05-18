@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIRO - Crisis Intelligence & Response Orchestrator</title>
+  
+  <!-- Font integration -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet Map Integration -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Animated Particle Canvas -->
+  <canvas id="particle-canvas"></canvas>
+  <canvas id="shield-canvas"></canvas>
+
+  <!-- STICKY GLASS HEADER (SECTION 5) -->
+  <header>
+    <div class="header-left" onclick="showScreen('location-screen')">
+      🛡️ <span class="logo-text">CIRO</span>
+    </div>
+    <div class="header-right">
+      <!-- Toggle 1: MODE -->
+      <button class="toggle-btn" id="mode-toggle" onclick="toggleMode()">
+        <span class="pulse-dot" id="mode-indicator"></span>
+        <span id="mode-label">LIVE</span>
+      </button>
+      
+      <!-- Toggle 2: LANGUAGE -->
+      <button class="toggle-btn" id="lang-toggle" onclick="toggleLanguage()">
+        🌐 <span id="lang-label">EN</span>
+      </button>
+
+      <!-- Toggle 3: THEME -->
+      <button class="toggle-btn" id="theme-toggle" onclick="toggleTheme()">
+        🌙
+      </button>
+    </div>
+  </header>
+
+  <div class="screen-wrapper">
+
+    <!-- SCREEN 1: SPLASH SCREEN (SECTION 12) -->
+    <div id="splash-screen" class="splash-container">
+      <svg class="shield-svg" viewBox="0 0 200 240">
+        <polygon class="shield-outline" points="100,10 180,50 180,140 100,220 20,140 20,50" fill="none" stroke="#00D4FF" stroke-width="4" />
+        <polygon class="shield-fill" points="100,25 165,60 165,130 100,195 35,130 35,60" fill="rgba(123, 47, 255, 0.3)" stroke="#7B2FFF" stroke-width="2" />
+        <text class="shield-fill" x="100" y="130" font-size="64" text-anchor="middle" fill="#00D4FF" font-weight="bold">🛡️</text>
+      </svg>
+      <div class="splash-title">CIRO</div>
+      <div class="splash-subtitle" id="splash-subtitle-text">Islamabad Ka Crisis Guardian</div>
+      <div class="splash-badge">⚡ Powered by Google Antigravity</div>
+    </div>
+
+    <!-- SCREEN 2: ONBOARDING SCREEN (SECTION 11) -->
+    <div id="onboarding-screen" class="screen onboard-container glass-card">
+      <div class="slide-container">
+        <!-- Slide 1 -->
+        <div class="onboard-slide active" id="slide-1">
+          <div class="slide-emoji">📡</div>
+          <h2 class="slide-title" id="slide1-title">Real-Time Signal Watcher</h2>
+          <p class="slide-desc" id="slide1-desc">CIRO consolidates live news feeds, OpenWeather updates, and citizen social streams to construct immediate threat detection matrixes for Islamabad sectors.</p>
+        </div>
+        <!-- Slide 2 -->
+        <div class="onboard-slide" id="slide-2">
+          <div class="slide-emoji">🤖</div>
+          <h2 class="slide-title" id="slide2-title">6 Collaborative AI Agents</h2>
+          <p class="slide-desc" id="slide2-desc">Six specialized Google Gemini agents dynamically evaluate flood thresholds, coordinate emergency deployment orders, prioritize trade-offs, and draft public warnings.</p>
+        </div>
+        <!-- Slide 3 -->
+        <div class="onboard-slide" id="slide-3">
+          <div class="slide-emoji">🗺️</div>
+          <h2 class="slide-title" id="slide3-title">ORS Path Optimization</h2>
+          <p class="slide-desc" id="slide3-desc">Integrates OpenRouteService API to draw alternate paths on vector maps when critical roads get blocked. Guides rescue vehicles to safety routes.</p>
+        </div>
+      </div>
+      <div class="onboard-dots">
+        <span class="dot active" onclick="setSlide(0)"></span>
+        <span class="dot" onclick="setSlide(1)"></span>
+        <span class="dot" onclick="setSlide(2)"></span>
+      </div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="skipOnboarding()" id="btn-skip">Skip</button>
+        <button class="btn-primary" onclick="nextSlide()" id="btn-next">Next</button>
+      </div>
+    </div>
+
+    <!-- SCREEN 3: LOCATION SELECT SCREEN -->
+    <div id="location-screen" class="screen">
+      <!-- Demo scenario selector banner if DEMO mode is enabled -->
+      <div id="demo-scenario-panel" class="scenario-select-wrapper" style="display: none;">
+        <div class="scenario-title" id="scenario-title-label">Simulated Scenario Picker</div>
+        <div class="scenario-grid">
+          <div class="scenario-card active" onclick="selectScenario('🌊 G-10 Urban Flood')" id="sc-flood">
+            🌊 G-10 Urban Flood
+          </div>
+          <div class="scenario-card" onclick="selectScenario('🚗 I-8 Road Accident')" id="sc-accident">
+            🚗 I-8 Road Accident
+          </div>
+          <div class="scenario-card" onclick="selectScenario('🌡️ Blue Area Heatwave')" id="sc-heatwave">
+            🌡️ Blue Area Heatwave
+          </div>
+          <div class="scenario-card" onclick="selectScenario('❌ False Alarm Recovery')" id="sc-falsealarm">
+            ❌ False Alarm Recovery
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 id="monitor-heading">Monitor Islamabad Sectors</h2>
+        <div id="fallback-badge-container"></div>
+      </div>
+      
+      <input type="text" class="search-input" id="location-search" placeholder="Type sector name (e.g. G-10, I-8)..." oninput="filterLocations()">
+      
+      <div class="location-grid" id="location-grid-container">
+        <!-- Javascript renders 10 locations here -->
+      </div>
+
+      <button class="btn-primary" style="width: 100%; padding: 16px; font-size: 18px; margin-top: 20px;" onclick="startAnalysis()" id="btn-monitor">
+        Monitor Karo ⚡
+      </button>
+    </div>
+
+    <!-- SCREEN 4: LIVE AGENT ACTIVITY -->
+    <div id="agent-screen" class="screen">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <h2 id="agent-activity-title">Orchestrator Pipelines Processing...</h2>
+        <div class="fallback-status-badge" id="agent-active-badge">ALL APIS LIVE</div>
+      </div>
+      
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="pipeline-progress"></div>
+      </div>
+
+      <div class="agent-cards-container" id="agent-cards-list">
+        <!-- 6 Agent rows generated dynamically -->
+      </div>
+    </div>
+
+    <!-- SCREEN 5: RESULTS SCREEN (5A & 5B) -->
+    <div id="results-screen" class="screen">
+      <div class="results-banner" id="results-alert-banner">
+        <div class="banner-left">
+          <h2 id="results-crisis-title">CRISIS DETECTED: FLOOD</h2>
+          <p id="results-crisis-subtitle" style="margin-top: 8px;">Heavy rainfall risk exceeding local G-10 threshold capacity.</p>
+        </div>
+        <div class="banner-right">
+          <div class="severity-meter">
+            <div style="font-size: 12px; opacity: 0.8;" id="severity-label">SEVERITY</div>
+            <div class="severity-val" id="results-severity-value">8</div>
+          </div>
+          <div class="severity-meter" style="margin-left: 20px;">
+            <div style="font-size: 12px; opacity: 0.8;" id="confidence-label">CONFIDENCE</div>
+            <div class="severity-val" id="results-confidence-value" style="color: var(--blue);">84%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAP CONTAINER -->
+      <h3 style="margin-bottom: 16px;" id="map-radar-title">Interactive Crisis & Response Map</h3>
+      <div class="map-container" id="leaflet-map-element"></div>
+
+      <!-- Resource Allocation Card Grid -->
+      <h3 style="margin-bottom: 16px;" id="res-alloc-title">Emergency Resource Deployments</h3>
+      <div class="location-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 30px;" id="resource-cards-container">
+        <!-- Generated dynamic resource allocations -->
+      </div>
+
+      <!-- Rerouting Alternative Path Details -->
+      <div class="glass-card" style="margin-bottom: 30px;" id="reroute-details-panel">
+        <h3 style="color: var(--orange); margin-bottom: 12px;" id="reroute-header">Traffic Reroute Alert</h3>
+        <p id="reroute-public-alert" style="line-height: 1.6; font-size: 15px; margin-bottom: 16px;"></p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;" id="alt-routes-card-grid">
+          <!-- Alt Route 1 and 2 -->
+        </div>
+      </div>
+
+      <!-- COLLAPSIBLE STAKEHOLDER MESSAGES -->
+      <h3 style="margin-bottom: 16px;" id="stakeholder-warnings-title">Stakeholder Communication Dispatches</h3>
+      <div class="alerts-grid" id="comm-alerts-container">
+        <!-- Collapsible items generated here -->
+      </div>
+
+      <!-- BUTTON ROW -->
+      <div class="action-buttons-row">
+        <button class="btn-secondary" onclick="showScreen('before-after-screen')" id="btn-ba">📈 Before/After</button>
+        <button class="btn-secondary" onclick="showScreen('traces-screen')" id="btn-traces">📋 Trace Viewer</button>
+        <button class="btn-secondary" onclick="showScreen('logs-screen')" id="btn-logs">📝 Audit Logs</button>
+        <button class="btn-primary" onclick="showScreen('report-screen')" id="btn-citizen-report">📢 Citizens Report</button>
+      </div>
+    </div>
+
+    <!-- SCREEN 6: BEFORE/AFTER SCREEN -->
+    <div id="before-after-screen" class="screen glass-card">
+      <h2 style="text-align: center; margin-bottom: 30px;" id="ba-title">Incident Response Velocity Audit</h2>
+      
+      <div class="split-screen">
+        <div class="glass-card before-column">
+          <h3 style="text-align: center; margin-bottom: 20px; color: var(--red);" id="ba-manual">MANUAL RESPONSE</h3>
+          <div class="metric-card">
+            <div class="metric-num">38m</div>
+            <div style="color: var(--text-secondary);" id="ba-dispatch">Dispatch Latency</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-num">1.2km</div>
+            <div style="color: var(--text-secondary);" id="ba-congestion">Traffic Congestion Radius</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-num">65%</div>
+            <div style="color: var(--text-secondary);" id="ba-coordination">Inter-agency Alignment</div>
+          </div>
+        </div>
+
+        <div class="glass-card after-column">
+          <h3 style="text-align: center; margin-bottom: 20px; color: var(--green);" id="ba-ciro">CIRO AUTOMATED</h3>
+          <div class="metric-card">
+            <div class="metric-num" style="color: var(--green);">1.8s</div>
+            <div style="color: var(--text-secondary);" id="ba-ai-lat">AI Decision Speed</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-num" style="color: var(--green);">320m</div>
+            <div style="color: var(--text-secondary);" id="ba-opt">Reroute Optimization Radius</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-num" style="color: var(--green);">98%</div>
+            <div style="color: var(--text-secondary);" id="ba-alloc">Optimal Resource Split</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <button class="btn-primary" onclick="showScreen('results-screen')" id="btn-ba-back">Back to Results</button>
+      </div>
+    </div>
+
+    <!-- SCREEN 7: TRACES VIEWER -->
+    <div id="traces-screen" class="screen glass-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2 id="traces-heading">Antigravity Execution Traces</h2>
+        <button class="btn-primary" onclick="exportTraceJSON()" id="btn-export-trace">📥 Export JSON</button>
+      </div>
+
+      <div id="traces-accordion-container">
+        <!-- 6 Collapsible trace sections loaded here -->
+      </div>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <button class="btn-primary" onclick="showScreen('results-screen')" id="btn-traces-back">Back to Results</button>
+      </div>
+    </div>
+
+    <!-- SCREEN 8: LOG VIEWER -->
+    <div id="logs-screen" class="screen glass-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2 id="logs-heading">Crisis Audit Ledger</h2>
+        <button class="btn-primary" onclick="exportLogsCSV()" id="btn-export-logs">📥 Export CSV</button>
+      </div>
+
+      <div class="glass-card" style="margin-bottom: 24px; padding: 16px;">
+        <div style="display: flex; gap: 15px; align-items: center;" id="logs-filters">
+          <span>Filter Status:</span>
+          <select id="log-filter-mode" onchange="loadLogs()" class="toggle-btn">
+            <option value="ALL">All Modes</option>
+            <option value="LIVE">Live Mode</option>
+            <option value="DEMO">Demo Mode</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="logs-grid-container" style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- Loaded logs from database -->
+      </div>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <button class="btn-primary" onclick="showScreen('results-screen')" id="btn-logs-back">Back to Results</button>
+      </div>
+    </div>
+
+    <!-- SCREEN 9: CITIZEN REPORT -->
+    <div id="report-screen" class="screen glass-card" style="max-width: 600px; margin: 0 auto;">
+      <h2 style="margin-bottom: 20px;" id="report-heading">Citizen Emergency Report Submission</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 24px;" id="report-subheading">Submit live citizen reports to be interpreted directly by Signal Watcher Agent 1.</p>
+
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-weight: bold; margin-bottom: 8px;" id="report-loc-label">Select Sector Location</label>
+        <select id="report-location-select" class="search-input" style="background: rgba(0,0,0,0.4);">
+          <!-- Populated from locations list -->
+        </select>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-weight: bold; margin-bottom: 8px;" id="report-desc-label">Describe Emergency Situation</label>
+        <textarea id="report-description-textarea" class="search-input" style="height: 120px; background: rgba(0,0,0,0.4);" placeholder="What is happening? Provide landmarks, street names if possible..."></textarea>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="showScreen('results-screen')" id="btn-report-cancel">Cancel</button>
+        <button class="btn-primary" onclick="submitCitizenReport()" id="btn-report-submit">Submit Report 📡</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
