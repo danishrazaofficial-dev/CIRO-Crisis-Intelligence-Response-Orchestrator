@@ -142,33 +142,4 @@ CIRO calculates a strict mathematical **Credibility Score** (0–100) for incomi
 
 ---
 
-## 🚀 How to Execute
 
-To launch the entire platform, run the following commands in three separate terminal instances:
-
-### 1. Backend FastAPI Server
-Navigate to the `/backend` folder. Ensure dependencies are installed and run the FastAPI server:
-```bash
-cd backend
-pip install -r requirements.txt
-python -m uvicorn main:app --reload --port 8000
-```
-* **Status Endpoint**: `http://127.0.0.1:8000/api/status`
-* **Swagger Documentation**: `http://127.0.0.1:8000/docs`
-
-### 2. Frontend Web Console
-Navigate to the `/frontend` folder and serve it locally:
-```bash
-cd frontend
-python -m http.server 3000
-```
-Open **`http://127.0.0.1:3000`** in your web browser.
-
-### 3. Mobile Expo Client
-Navigate to the `/mobile` folder, install packages, and start Expo:
-```bash
-cd mobile
-npm install
-npm run start
-```
-* Press **`a`** to open in an Android Emulator, **`i`** for iOS Simulator, or **`w`** for Web.
